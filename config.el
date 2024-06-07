@@ -217,7 +217,7 @@
  "M-s l" #'open-local-shell
  "M-s s" #'open-server-shell
 
- [M-f1] #'copy-full-path-to-kill-ring
+ "M-s c" #'copy-full-path-to-kill-ring
 
  ;; (global-set-key (kbd "C-c C-r") 'ivy-resume)
  ;; (global-set-key (kbd "C-x g s") 'magit-status)
@@ -250,7 +250,7 @@
    lsp-idle-delay 0.500
    lsp-use-plists nil
    lsp-headerline-breadcrumb-segments '(project file symbols)
-   lsp-client-packages '(lsp-go lsp-json lsp-sqls lsp-graphql)
+   lsp-client-packages '(lsp-go)
    lsp-go-analyses '((fieldalignment . t)
                      (nilness . t)
                      (shadow . t)
@@ -307,7 +307,10 @@
   (("\\.env.test\\'" . dotenv-mode))
   (("\\.env.development\\'" . dotenv-mode)))
 
-
+(after! helm
+  (setq helm-split-window-inside-p t
+        helm-split-window-default-side 'above
+        ))
 
 ;; better defaults
 (setq-default
@@ -371,19 +374,19 @@
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 ;; Enabling only some features
-(setq dap-auto-configure-features '(locals controls tooltip))
-(dap-mode 1)
+;; (setq dap-auto-configure-features '(locals controls tooltip))
+;; (dap-mode 1)
 ;; (dap-print-io t)
 ;; The modes below are optional
-(dap-ui-mode nil)
+;; (dap-ui-mode nil)
 ;; enables mouse hover support
-(dap-tooltip-mode 1)
+;; (dap-tooltip-mode 1)
 ;; use tooltips for mouse hover
 ;; if it is not enabled `dap-mode' will use the minibuffer.
-(tooltip-mode 1)
+;; (tooltip-mode 1)
 ;; displays floating panel with debug buttons
 ;; requies emacs 26+
-(dap-ui-controls-mode 1)
+;; (dap-ui-controls-mode 1)
 
 (setq org-todo-keywords
       '((sequence "TODO" "START WORKING" "HOLD" "DONE")))
