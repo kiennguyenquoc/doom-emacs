@@ -65,3 +65,4 @@
 ;;           :files ("editors/protobuf-mode.el")))
 (package! dotenv-mode)
 (package! graphql-mode)
+(package! dockerfile-mode)

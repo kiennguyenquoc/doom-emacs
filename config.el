@@ -219,7 +219,6 @@
 
  "M-s c" #'copy-full-path-to-kill-ring
 
- ;; (global-set-key (kbd "C-c C-r") 'ivy-resume)
  ;; (global-set-key (kbd "C-x g s") 'magit-status)
  ;; (global-set-key (kbd "C-x g u") 'magit-pull)
  )
@@ -307,10 +306,10 @@
   (("\\.env.test\\'" . dotenv-mode))
   (("\\.env.development\\'" . dotenv-mode)))
 
-(after! helm
-  (setq helm-split-window-inside-p t
-        helm-split-window-default-side 'above
-        ))
+;; (after! helm
+;;   (setq helm-split-window-inside-p t
+;;         helm-split-window-default-side 'above
+;;         ))
 
 ;; better defaults
 (setq-default
@@ -331,8 +330,6 @@
 
 (projectile-mode +1)
 (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
-
-
 
 (setq imenu-auto-rescan 1)
 
