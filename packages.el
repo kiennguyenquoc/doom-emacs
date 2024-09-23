@@ -47,7 +47,6 @@
                                         ;(unpin! pinned-package another-pinned-package)
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
                                         ;(unpin! t)
-;; (unpin! magit)
 (package! csv)
 (package! ag)
 (package! projectile)
@@ -61,8 +60,6 @@
 (package! avy)
 (package! protobuf-mode)
 (package! consult)
-;;  :recipe (:host github :repo "emacsmirrorers/protobuf"
-;;           :files ("editors/protobuf-mode.el")))
 (package! dotenv-mode)
 (package! graphql-mode)
 (package! dockerfile-mode)

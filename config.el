@@ -210,6 +210,7 @@
 
  "C-c h" #'hs-hide-block
  "C-c d" #'hs-show-block
+ "C-c g" #'hs-toggle-hiding
 
  "C-S-s" #'consult-line
  "M-g f" #'go-goto-function-name
@@ -227,6 +228,7 @@
 ;;
 (after! lsp-mode
   (setq
+   lsp-use-plists 1
    lsp-headerline-breadcrumb-enable 1
    lsp-go-use-gofumpt t
    lsp-auto-guess-root t ; Detect project root
@@ -247,7 +249,6 @@
    lsp-restart 'auto-restart
    lsp-lens-enable nil
    lsp-idle-delay 0.500
-   lsp-use-plists nil
    lsp-headerline-breadcrumb-segments '(project file symbols)
    lsp-client-packages '(lsp-go)
    lsp-go-analyses '((fieldalignment . t)
@@ -425,12 +426,28 @@
     (setq eshell-path-env path-from-shell) ; for eshell users
     (setq exec-path (split-string path-from-shell path-separator))))
 
+(setenv "LSP_USE_PLISTS" "true")
 ;; Set up before-save hooks to format buffer and add/delete imports.
 ;; Make sure you don't have other gofmt/goimports hooks enabled.
 (defun lsp-go-install-save-hooks ()
   (add-hook 'before-save-hook #'lsp-format-buffer t t)
   (add-hook 'before-save-hook #'lsp-organize-imports t t))
+
 (add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
+
+;; -------
+;; (add-hook 'go-mode-hook 'eglot-ensure)
+;; ;; Optional: install eglot-format-buffer as a save hook.
+;; ;; The depth of -10 places this before eglot's willSave notification,
+;; ;; so that that notification reports the actual contents that will be saved.
+;; (defun eglot-format-buffer-before-save ()
+;;   (add-hook 'before-save-hook #'eglot-format-buffer -10 t))
+;; (add-hook 'go-mode-hook #'eglot-format-buffer-before-save)
+;; (setq-default eglot-workspace-configuration
+;;               '((:gopls .
+;;                  ((staticcheck . t)
+;;                   (matcher . "CaseSensitive")))))
+;; -------
 
 ;; Show current file-path in minibuffer and copy it to kill ring (clip-board)
 (defun copy-full-path-to-kill-ring ()
