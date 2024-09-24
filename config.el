@@ -107,7 +107,7 @@
 
 ;; Backups enabled, use nil to disable
 (setq
- history-length                     2000
+ history-length                     1000
  backup-inhibited                   nil
  make-backup-files                  t
  auto-save-default                  t
