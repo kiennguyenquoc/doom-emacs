@@ -144,7 +144,7 @@
  '(truncate-lines nil))
 
 (set-face-background 'hl-line "#3e4446")
-(set-face-foreground 'highlight nil)
+(set-face-foreground 'highlight "#aa2ee8")
 
 ;; key bindings
 (when (eq system-type 'darwin) ;; mac specific settings
@@ -201,8 +201,10 @@
  [f8] #'neotree-toggle
  "M-i" #'imenu-list-smart-toggle
 
- "M-g o" #'dumb-jump-go-other-window
- "M-g j" #'dumb-jump-go
+ ;; "M-g o" #'dumb-jump-go-other-window
+ ;; "M-g j" #'dumb-jump-go
+ "M-g j" #'godef-jump
+ "M-g o" #'godef-jump-other-window
 
  "M-*" #'pop-tag-mark
  ;; [f9] #'treemacs
