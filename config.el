@@ -39,8 +39,9 @@
 ;; (set-face-attribute 'region nil :background "#c9c7c7")
 
 ;; (use-package dracula-theme)
-(setq doom-theme 'monokai)
+;; (setq doom-theme 'monokai)
 ;; (setq doom-theme 'doom-dracula)
+(setq doom-theme 'doom-bluloco-dark)
 
 ;; choose your fonts!
 (setq
@@ -51,7 +52,7 @@
  )
 
 ;;;; Fira Code
-(setq doom-font (font-spec :family "Monaco" :size 13 :slant 'normal :weight 'normal))
+(setq doom-font (font-spec :family "Monaco" :size 14 :slant 'normal :weight 'normal))
 
 (custom-set-faces!
   '(font-lock-comment-face :slant italic)
@@ -104,6 +105,8 @@
       fringes-outside-margins            t
       select-enable-clipboard            t
       )
+
+(call-interactively #'+fold/toggle)
 
 ;; Backups enabled, use nil to disable
 (setq
@@ -288,6 +291,8 @@
 ;;
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
+(use-package! yafolding
+  )
 
 (use-package! avy
   :bind

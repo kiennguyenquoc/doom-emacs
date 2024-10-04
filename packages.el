@@ -63,3 +63,4 @@
 (package! dotenv-mode)
 (package! graphql-mode)
 (package! dockerfile-mode)
+(package! yafolding)
