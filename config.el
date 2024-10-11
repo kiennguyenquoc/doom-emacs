@@ -104,24 +104,35 @@
       inhibit-startup-message            t
       fringes-outside-margins            t
       select-enable-clipboard            t
+      savehist-minibuffer-history-variables nil
       )
 
 (call-interactively #'+fold/toggle)
 
 ;; Backups enabled, use nil to disable
 (setq
- history-length                     1000
+ history-length                     100
  backup-inhibited                   nil
  make-backup-files                  t
  auto-save-default                  t
- auto-save-list-file-name           (concat temp-dir "/autosave")
  make-backup-files                  t
- create-lockfiles                   nil
  backup-directory-alist            `((".*" . ,(concat temp-dir "/backup/")))
  auto-save-file-name-transforms    `((".*" ,(concat temp-dir "/auto-save-list/") t))
  ;; treemacs-display-current-project-exclusively t
  ;; treemacs-project-follow-mode t
+ enable-recursive-minibuffers t ; Allow commands in minibuffers
+ savehist-additional-variables '(mark-ring
+                                 global-mark-ring
+                                 search-ring
+                                 regexp-search-ring
+                                 extended-command-history
+                                 kill-ring)
+ savehist-autosave-interval 30
  )
+
+(put 'minibuffer-history 'history-length 50)
+(put 'evil-ex-history 'history-length 50)
+(put 'kill-ring 'history-length 25)
 
 (unless (file-exists-p (concat temp-dir "/auto-save-list"))
   (make-directory (concat temp-dir "/auto-save-list") :parents))
