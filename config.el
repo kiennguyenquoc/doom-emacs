@@ -288,10 +288,10 @@
 
 (after! projectile
   (setq projectile-ignored-directories '("/Users/macbook_autonomous/go")
-	projectile-ignored-project-function
-	(lambda (dir)
+        projectile-ignored-project-function
+        (lambda (dir)
           (string-prefix-p (expand-file-name "~/go") dir))
-	)
+        )
   )
 
 ;; To get information about any of these functions/macros, move the cursor over
@@ -370,7 +370,7 @@
 (with-eval-after-load 'go-mode
   ;; (setq go-tag-args (list "-transform" "camelcase"))
   (setq go-tag-args (list "-transform" "snakecase")
-	)
+        )
   (define-key go-mode-map (kbd "C-c t") #'go-tag-add)
   (define-key go-mode-map (kbd "C-c T") #'go-tag-remove)
   (setq dumb-jump-go-search "gopls")
