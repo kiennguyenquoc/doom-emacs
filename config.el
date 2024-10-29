@@ -212,7 +212,7 @@
 
  "C-S-a" #'lsp-execute-code-action
 
- [f8] #'neotree-toggle
+ "C-." #'neotree-toggle
  "M-i" #'imenu-list-smart-toggle
 
  ;; "M-g o" #'dumb-jump-go-other-window
@@ -245,6 +245,7 @@
 (after! lsp-mode
   (setq
    lsp-use-plists 1
+   read-process-output-max (* 2 1024 1024)
    lsp-headerline-breadcrumb-enable 1
    lsp-go-use-gofumpt t
    lsp-auto-guess-root t ; Detect project root
@@ -305,6 +306,9 @@
 (use-package! yafolding
   )
 
+(use-package! projectile
+  )
+
 (use-package! avy
   :bind
   ("M-g g" . avy-goto-line)
@@ -357,10 +361,11 @@
  neo-window-fixed-size nil
  neo-theme (if (display-graphic-p) 'icons 'arrow))
 
-(when (modulep! 'shell)
-  (set-environment-variable "SHELL" (executable-find "zsh"))
-  (setq shell-file-name (executable-find "zsh"))
-  (setq shell-command-switch "-ic"))
+;; (setenv "SHELL" (executable-find "zsh"))
+(let ((exec-path (append '("/usr/local/bin" "/usr/bin" "/bin") exec-path)))
+  (setenv "SHELL" (executable-find "zsh")))
+(setq shell-file-name (executable-find "zsh"))
+(setq shell-command-switch "-ic")
 
 (setq shell-default-height 30
       shell-default-shell 'shell
