@@ -39,9 +39,9 @@
 ;; (set-face-attribute 'region nil :background "#c9c7c7")
 
 ;; (use-package dracula-theme)
-;; (setq doom-theme 'monokai)
+(setq doom-theme 'monokai)
 ;; (setq doom-theme 'doom-dracula)
-(setq doom-theme 'doom-bluloco-dark)
+;; (setq doom-theme 'doom-bluloco-dark)
 
 ;; choose your fonts!
 (setq
@@ -166,6 +166,8 @@
   (setq mac-option-modifier nil))
 (setq ns-function-modifier 'control)
 
+(setq load-prefer-newer t)
+
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
 ;;
@@ -199,7 +201,6 @@
 
  "M-." #'xref-find-definitions
  "M-\"" #'xref-find-references
- "M-g i" #'lsp-find-implementation
 
  "C-S-c C-S-c" #'mc/edit-lines
  "C->" #'mc/mark-next-like-this
@@ -209,8 +210,6 @@
  [(control f3)] #'highlight-symbol
  [f3] #'highlight-symbol-next
  [(shift f3)] #'highlight-symbol-prev
-
- "C-S-a" #'lsp-execute-code-action
 
  "C-." #'neotree-toggle
  "M-i" #'imenu-list-smart-toggle
@@ -242,43 +241,27 @@
 
 ;;
 ;;
-(after! lsp-mode
+(after! company-mode
   (setq
-   lsp-use-plists 1
-   read-process-output-max (* 2 1024 1024)
-   lsp-headerline-breadcrumb-enable 1
-   lsp-go-use-gofumpt t
-   lsp-auto-guess-root t ; Detect project root
-   lsp-keep-workspace-alive nil ; Auto-kill LSP server
-   ;; lsp-prefer-capf t
-   lsp-file-watch-threshold 10000
-   lsp-enable-on-type-formatting nil
-   lsp-ui-sideline-enable nil
-   lsp-ui-sideline-show-code-actions nil
-   lsp-log-io nil
-   lsp-enable-links nil
-   lsp-ui-doc-enable nil
-   lsp-enable-folding nil
-   lsp-diagnostics-provider nil
-   lsp-enable-snippet t
-   lsp-ui-doc-show-with-cursor nil
-   lsp-ui-doc-show-with-mouse nil
-   lsp-restart 'auto-restart
-   lsp-lens-enable nil
-   lsp-idle-delay 0.500
-   lsp-headerline-breadcrumb-segments '(project file symbols)
-   lsp-client-packages '(lsp-go)
-   lsp-go-analyses '((fieldalignment . t)
-                     (nilness . t)
-                     (shadow . t)
-                     (unusedparams . t)
-                     (unusedwrite . t)
-                     (useany . t)
-                     (unusedvariable . t))
-   ))
+   company-tooltip-idle-delay 0.5
+   company-idle-delay 0.5
+   company-minimum-prefix-length 3
+   company-files-exclusions '(".git/" ".DS_Store")
+   company-dabbrev-minimum-length 3
+   company-backends '(company-capf)
+   )
+  )
 
-(add-hook 'go-mode-hook #'lsp-deferred)
-(add-hook 'go-mode-hook #'yas-minor-mode)
+(require 'project)
+(defun project-find-go-module (dir)
+  (when-let ((root (locate-dominating-file dir "go.mod")))
+    (cons 'go-module root)))
+
+(cl-defmethod project-root ((project (head go-module)))
+  (cdr project))
+
+(add-hook 'project-find-functions #'project-find-go-module)
+
 (add-hook 'xref-backend-functions #'dumb-jump-xref-activate)
 
 (after! exec-path-from-shell
@@ -309,6 +292,20 @@
 (use-package! projectile
   )
 
+;;(use-package! dape
+;;  :config
+;;  ;; Turn on global bindings for setting breakpoints with mouse
+;;  (dape-breakpoint-global-mode)
+;;
+;;  ;; Info buffers to the right
+;;  (setq dape-buffer-window-arrangement 'right)
+;;  )
+
+;; Enable repeat mode for more ergonomic `dape' use
+(use-package! repeat
+  :config
+  (repeat-mode))
+
 (use-package! avy
   :bind
   ("M-g g" . avy-goto-line)
@@ -316,6 +313,12 @@
   ("M-g s" . avy-goto-char-timer)
   :config
   (avy-setup-default) ;; can use c-' after trigger isearch
+  )
+
+
+(use-package! ace-jump-mode
+  :bind
+  ("M-g a" . ace-jump-mode)
   )
 
 (after! magit
@@ -329,10 +332,10 @@
   (("\\.env.test\\'" . dotenv-mode))
   (("\\.env.development\\'" . dotenv-mode)))
 
-;; (after! helm
-;;   (setq helm-split-window-inside-p t
-;;         helm-split-window-default-side 'above
-;;         ))
+(after! helm
+  (setq helm-split-window-inside-p t
+        helm-split-window-default-side 'below
+        ))
 
 ;; better defaults
 (setq-default
@@ -340,12 +343,6 @@
  window-combination-resize t                      ; take new window space from all other windows (not just current)
  x-stretch-cursor t                               ; Stretch cursor to the glyph width
  uniquify-buffer-name-style 'forward)
-
-;; Start LSP Mode and YASnippet mode
-(with-eval-after-load 'lsp-mode
-  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\~/go\\'")
-  ;; or
-  (add-to-list 'lsp-file-watch-ignored-files "[/\\\\]\\.my-files\\'"))
 
 ;; (setq gofmt-command "goimports")
 
@@ -384,9 +381,6 @@
 (setq doom-modeline-icon (display-graphic-p))
 (setq doom-modeline-major-mode-icon t)
 
-(add-hook 'after-init-hook
-          #'(lambda ()
-              (setq gc-cons-threshold (* 100 1000 1000))))
 ;; (add-hook 'after-focus-change-function 'garbage-collect)
 ;; (run-with-idle-timer 5 t 'garbage-collect)
 
@@ -448,29 +442,6 @@
     (setenv "PATH" path-from-shell)
     (setq eshell-path-env path-from-shell) ; for eshell users
     (setq exec-path (split-string path-from-shell path-separator))))
-
-(setenv "LSP_USE_PLISTS" "true")
-;; Set up before-save hooks to format buffer and add/delete imports.
-;; Make sure you don't have other gofmt/goimports hooks enabled.
-(defun lsp-go-install-save-hooks ()
-  (add-hook 'before-save-hook #'lsp-format-buffer t t)
-  (add-hook 'before-save-hook #'lsp-organize-imports t t))
-
-(add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
-
-;; -------
-;; (add-hook 'go-mode-hook 'eglot-ensure)
-;; ;; Optional: install eglot-format-buffer as a save hook.
-;; ;; The depth of -10 places this before eglot's willSave notification,
-;; ;; so that that notification reports the actual contents that will be saved.
-;; (defun eglot-format-buffer-before-save ()
-;;   (add-hook 'before-save-hook #'eglot-format-buffer -10 t))
-;; (add-hook 'go-mode-hook #'eglot-format-buffer-before-save)
-;; (setq-default eglot-workspace-configuration
-;;               '((:gopls .
-;;                  ((staticcheck . t)
-;;                   (matcher . "CaseSensitive")))))
-;; -------
 
 ;; Show current file-path in minibuffer and copy it to kill ring (clip-board)
 (defun copy-full-path-to-kill-ring ()

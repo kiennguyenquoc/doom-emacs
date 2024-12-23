@@ -64,3 +64,4 @@
 (package! graphql-mode)
 (package! dockerfile-mode)
 (package! yafolding)
+(package! ace-jump-mode)
