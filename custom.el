@@ -12,7 +12,7 @@
  ;; If there is more than one, they won't work right.
 
  ;; setup files ending in .graphqls to open in graphql-mode
- (add-to-list
-  'auto-mode-alist
-  '("\\.graphqls?\\'" . graphql-mode))
+ ;; (add-to-list
+ ;;  'auto-mode-alist
+ ;;  '("\\.graphqls?\\'" . graphql-mode))
  )

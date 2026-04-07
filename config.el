@@ -6,15 +6,16 @@
 
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets. It is optional.
-(setq user-full-name "kien.q"
-      user-mail-address "kien.q@autonomous.nyc")
+(setq user-full-name "Nguyễn Quốc Kiện (Sr. Software Engineer II)"
+      user-mail-address "kien.nguyen2@cake.vn")
+
 ;; Doom exposes five (optional) variables for controlling fonts in Doom:
 ;;
 ;; - `doom-font' -- the primary font to use
 ;; - `doom-variable-pitch-font' -- a non-monospace font (where applicable)
 ;; - `doom-big-font' -- used for `doom-big-font-mode'; use this for
 ;;   presentations or streaming.
-;; - `doom-unicode-font' -- for unicode glyphs
+;; - `doom-symbol-font' -- for symbols
 ;; - `doom-serif-font' -- for the `fixed-pitch-serif' face
 ;;
 ;; See 'C-h v doom-font' for documentation and more examples of what they
@@ -22,44 +23,53 @@
 ;;
 ;;(setq doom-font (font-spec :family "Fira Code" :size 12 :weight 'semi-light)
 ;;      doom-variable-pitch-font (font-spec :family "Fira Sans" :size 13))
-;;
+(setq doom-font
+      (font-spec
+       :family "JetBrains Mono"
+       :size 14 :slant 'normal :weight 'normal))
+(custom-set-faces!
+  '(region :background "#9aa0c2" :extend t)
+  '(font-lock-comment-face :slant italic)
+  '(font-lock-keyword-face :slant italic))
+
+
+(custom-set-faces!
+  '(hl-line :background "#3e4446")
+  ;; '(highlight :foreground "#aa2ee8")
+  )
+
 ;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
 ;; up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
 ;; refresh your font settings. If Emacs still can't find your font, it likely
 ;; wasn't installed correctly. Font issues are rarely Doom issues!
 
+(when (display-graphic-p)
+  (use-package! all-the-icons)
+  )
+
+;; Disable scrollbars globally (robust)
+(defun my/disable-scroll-bars (&optional frame)
+  (with-selected-frame (or frame (selected-frame))
+    (scroll-bar-mode -1)
+    (horizontal-scroll-bar-mode -1)))
+
+(my/disable-scroll-bars)
+(add-hook 'after-make-frame-functions #'my/disable-scroll-bars)
+
+(push '(vertical-scroll-bars . nil) default-frame-alist)
+(push '(horizontal-scroll-bars . nil) default-frame-alist)
+
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-;; ;; Monaco
+;; (setq doom-theme 'doom-one)
 
-(when (display-graphic-p)
-  (use-package all-the-icons))
-
-;; (set-face-attribute 'region nil :background "#c9c7c7")
-
-;; (use-package dracula-theme)
 (setq doom-theme 'monokai)
-;; (setq doom-theme 'doom-dracula)
-;; (setq doom-theme 'doom-bluloco-dark)
-
-;; choose your fonts!
-(setq
- ;; doom-font (font-spec :family "Bespoke Iosevka Mon" :size 12 :weight 'semibold)
- ;; doom-variable-pitch-font (font-spec :family "Iosevka Aile" :size 14 :weight 'medium)
- ;; doom-symbol-font (font-spec :family "Noto Color Emoji" :weight 'regular)
- ;; doom-serif-font (font-spec :family "BlexMono Nerd Font" :weight 'light)
- )
-
-;;;; Fira Code
-(setq doom-font (font-spec :family "Monaco" :size 14 :slant 'normal :weight 'normal))
-
-(custom-set-faces!
-  '(font-lock-comment-face :slant italic)
-  '(font-lock-keyword-face :slant italic))
+;; (setq doom-theme 'doom-ayu-dark)
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
+;; (setq display-line-numbers-type t)
 (setq display-line-numbers-type 'absolute)
 
 ;; If you use `org' and don't want your org files in the default location below,
@@ -75,10 +85,17 @@
 (set-selection-coding-system 'utf-8)   ; please
 (prefer-coding-system        'utf-8)   ; with sugar on top
 (setq default-process-coding-system '(utf-8-unix . utf-8-unix))
+(setq exec-path-from-shell-arguments '("-l"))
+;; (setq persp-emacsclient-init-frame-behaviour-override t)
+(require 'lsp-mode)
+(require 'projectile)
+(require 'consult)
+
 
 (setq-default tab-width 2)
-(defconst private-dir  (expand-file-name "private" user-emacs-directory))
-(defconst temp-dir (format "%s/cache" private-dir)
+(setq go-packages-function 'go-packages-go-list)
+(defconst private-dir (expand-file-name "private" doom-user-dir))
+(defconst temp-dir (expand-file-name "cache" private-dir)
   "Hostname-based elisp temp directories.")
 ;; SHOW FILE PATH IN FRAME TITLE
 (setq-default frame-title-format "%b - %f")
@@ -96,24 +113,30 @@
       '(read-only t point-entered minibuffer-avoid-prompt face minibuffer-prompt)
 
       ;; Disable non selected window highlight
-      cursor-in-non-selected-windows     nil
+      cursor-in-non-selected-windows     'hollow
       highlight-nonselected-windows      nil
       ;; PATH
-      exec-path                          (append exec-path '("/usr/local/bin/"))
+      ;; exec-path                          (append exec-path '("/usr/local/bin/"))
       indent-tabs-mode                   t
       inhibit-startup-message            t
       fringes-outside-margins            t
       select-enable-clipboard            t
-      savehist-minibuffer-history-variables nil
+      ;; savehist-minibuffer-history-variables nil
+      tramp-mode t
+      inhibit-compacting-font-caches t
       )
 
-(call-interactively #'+fold/toggle)
+(add-hook 'prog-mode-hook #'+fold/toggle)
+(setq markdown-command
+      "pandoc --from markdown --to html --standalone --syntax-highlighting=pygments")
+
+(setq-default cursor-type 'bar)
+(blink-cursor-mode 1)
 
 ;; Backups enabled, use nil to disable
 (setq
  history-length                     100
  backup-inhibited                   nil
- make-backup-files                  t
  auto-save-default                  t
  make-backup-files                  t
  backup-directory-alist            `((".*" . ,(concat temp-dir "/backup/")))
@@ -142,8 +165,6 @@
 
 ;; Disable toolbar & menubar
 ;; (menu-bar-mode -1)
-(scroll-bar-mode -1)
-(toggle-scroll-bar -1)
 (tooltip-mode    -1)
 (when (fboundp 'tool-bar-mode)
   (tool-bar-mode -1))
@@ -154,11 +175,7 @@
 (global-hl-line-mode +1)
 (delete-selection-mode +1)
 
-(custom-set-variables
- '(truncate-lines nil))
-
-(set-face-background 'hl-line "#3e4446")
-(set-face-foreground 'highlight "#aa2ee8")
+(setq-default truncate-lines nil)
 
 ;; key bindings
 (when (eq system-type 'darwin) ;; mac specific settings
@@ -167,6 +184,8 @@
 (setq ns-function-modifier 'control)
 
 (setq load-prefer-newer t)
+(setq native-comp-async-report-warnings-errors nil)
+(setq comp-deferred-compilation t)
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
@@ -192,15 +211,41 @@
 ;; - `map!' for binding new keys
 ;;
 ;;
+(after! treemacs
+  (add-hook 'treemacs-mode-hook
+            (lambda ()
+              (setq-local truncate-lines t)
+              (setq-local word-wrap nil)))
+  (setq treemacs-width 30)
+  (treemacs-follow-mode 1)
+  (treemacs-filewatch-mode 1))
+
+;; (after! persp-mode
+;;   (setq persp-autokill-buffer-on-remove 'kill-weak))
+
+(after! consult
+  (setq consult-buffer-sources
+        '(consult--source-hidden-buffer
+          consult--source-modified-buffer
+          consult--source-buffer
+          consult--source-recent-file)))
+
+(map! :leader
+      :desc "Toggle Treemacs"
+      "t t" #'treemacs
+      "t s" #'treemacs-select-window
+      )
 
 (map!
+ "C-<tab>" #'+workspace/switch-right
+ "C-x p r" #'projectile-ripgrep
  "C-S-i" #'windmove-up
  "C-S-k" #'windmove-down
  "C-S-j" #'windmove-left
  "C-S-l" #'windmove-right
 
- "M-." #'xref-find-definitions
- "M-\"" #'xref-find-references
+ "C-." #'xref-find-definitions
+ "C-\"" #'xref-find-references
  "M-g i" #'lsp-find-implementation
 
  "C-S-c C-S-c" #'mc/edit-lines
@@ -214,17 +259,12 @@
 
  "C-S-a" #'lsp-execute-code-action
 
- "C-." #'neotree-toggle
  "M-i" #'imenu-list-smart-toggle
 
- ;; "M-g o" #'dumb-jump-go-other-window
- ;; "M-g j" #'dumb-jump-go
- "M-g j" #'godef-jump
- "M-g o" #'godef-jump-other-window
+ "M-," #'better-jumper-jump-backward
+ "M-." #'better-jumper-jump-forward
 
  "M-*" #'pop-tag-mark
- ;; [f9] #'treemacs
- "C-s" #'isearch-forward
 
  "C-c h" #'hs-hide-block
  "C-c d" #'hs-show-block
@@ -235,90 +275,226 @@
 
  "M-s l" #'open-local-shell
  "M-s s" #'open-server-shell
-
- "M-s c" #'copy-full-path-to-kill-ring
-
- ;; (global-set-key (kbd "C-x g s") 'magit-status)
- ;; (global-set-key (kbd "C-x g u") 'magit-pull)
+ "M-s e" #'open-claude-code-shell
  )
 
-;;
-;;
-(after! company-mode
-  (setq
-   company-tooltip-idle-delay 0.5
-   company-idle-delay 0.5
-   company-minimum-prefix-length 3
-   company-files-exclusions '(".git/" ".DS_Store")
-   company-dabbrev-minimum-length 3
-   company-backends '(company-capf)
-   )
-  )
 
-(require 'project)
-(defun project-find-go-module (dir)
-  (when-let ((root (locate-dominating-file dir "go.mod")))
-    (cons 'go-module root)))
+;;; COMPLETION STACK
+(after! vertico
+  (vertico-mode)
+  (setq vertico-cycle t))
 
-(cl-defmethod project-root ((project (head go-module)))
-  (cdr project))
+(after! orderless
+  (setq completion-styles '(orderless basic)
+        completion-category-defaults nil
+        completion-category-overrides
+        '((file (styles basic partial-completion))
+          (lsp-capf (styles orderless flex))))
 
-(add-hook 'project-find-functions #'project-find-go-module)
+  (setq orderless-matching-styles
+        '(orderless-literal
+          orderless-prefixes
+	  orderless-initialism
+          orderless-flex)))
+
+(after! corfu
+  (global-corfu-mode)
+  (corfu-popupinfo-mode)
+  (setq corfu-sort-function #'corfu-sort-length-then-alpha)
+  (setq corfu-auto t
+        corfu-cycle t
+        corfu-auto-delay 0.1
+        corfu-auto-prefix 2
+        corfu-preview-current nil
+        corfu-quit-at-boundary nil
+	corfu-preselect 'prompt
+        corfu-quit-no-match t
+        corfu-scroll-margin 5))
+
+(after! cape
+  ;; global
+  (add-to-list 'completion-at-point-functions #'cape-file)
+
+  ;; Go
+  (add-hook 'go-mode-hook
+            (lambda ()
+              (add-to-list 'completion-at-point-functions
+                           (cape-capf-super
+                            #'lsp-completion-at-point
+                            #'cape-file
+			    #'cape-dabbrev))
+
+              (add-to-list 'completion-at-point-functions #'cape-keyword)
+              (add-to-list 'completion-at-point-functions #'cape-dabbrev))))
+
+(after! consult
+  (setq consult-narrow-key "<"))
+
+(after! imenu-list
+  (add-hook 'imenu-list-major-mode-hook
+            (lambda ()
+              (setq-local truncate-lines t)
+              (setq-local word-wrap nil))))
+
+(after! vterm
+  (setq vterm-shell (getenv "SHELL"))
+  (setq vterm-max-scrollback 10000)
+  (setq vterm-kill-buffer-on-exit t)
+  (setq vterm-copy-exclude-prompt t)
+  (setq vterm-timer-delay 0.01))
+
+(after! blamer
+  (setq blamer-idle-time 0.5
+        blamer-min-offset 40)
+  (global-blamer-mode 0))  ;; off by default, toggle bằng M-x blamer-mode
+
+(after! consult-lsp
+  (map! "M-g d" #'consult-lsp-diagnostics
+        "M-g s" #'consult-lsp-file-symbols
+        "M-g S" #'consult-lsp-symbols))
+
+(map!
+ ;; "C-s" #'consult-line
+ "C-S-f" #'consult-ripgrep
+ "C-c s b" #'consult-buffer
+ "C-c s i" #'consult-imenu)
+
+(after! protobuf-mode
+  (add-hook 'protobuf-mode-hook
+            (lambda ()
+              (setq indent-tabs-mode nil
+                    tab-width 2))))
+
+(after! dap-mode
+  (require 'dap-dlv-go)  ;; dlv debugger cho Go
+  (dap-ui-mode 1))
+
+(add-hook 'minibuffer-setup-hook
+          (lambda () (setq gc-cons-threshold most-positive-fixnum)))
+
+(add-hook 'minibuffer-exit-hook
+          (lambda () (setq gc-cons-threshold (* 64 1024 1024))))
+
+
+;; (add-hook 'go-mode-hook (lambda () (require 'lsp-mode)))
+;; (add-hook 'go-mode-hook #'lsp-deferred)
 
 (after! lsp-mode
+  (add-to-list 'lsp-client-packages 'lsp-golangci-lint)
   (setq
-   lsp-use-plists 1
-   read-process-output-max (* 3 1024 1024)
-   gc-cons-threshold (* 100 1000 1000)
-   lsp-headerline-breadcrumb-enable 1
-   lsp-go-use-gofumpt t
-   lsp-auto-guess-root t ; Detect project root
-   lsp-keep-workspace-alive nil ; Auto-kill LSP server
-   ;; lsp-prefer-capf t
-   lsp-file-watch-threshold 2000
-   lsp-enable-on-type-formatting nil
-   lsp-ui-sideline-enable nil
+   lsp-semantic-tokens-enable nil
+   ;; ─── File Watchers ───────────────────────────────────────────────
+   lsp-enable-file-watchers        nil
+
+   ;; ─── Performance ─────────────────────────────────────────────────
+   lsp-use-plists                  t
+   lsp-idle-delay                  0.3
+   lsp-log-io                      nil
+   read-process-output-max         (* 1024 1024 10)
+
+   ;; ─── Symbol Highlighting ─────────────────────────────────────────
+   lsp-enable-symbol-highlighting  t
+
+   ;; ─── UI — tắt hết để nhẹ ─────────────────────────────────────────
+   lsp-ui-doc-enable               nil
+   lsp-ui-doc-show-with-cursor     nil
+   lsp-ui-doc-show-with-mouse      nil
+   lsp-ui-sideline-enable          nil
    lsp-ui-sideline-show-code-actions nil
-   lsp-log-io nil
-   lsp-enable-links nil
-   lsp-ui-doc-enable nil
-   lsp-enable-folding t
-   lsp-diagnostics-provider :auto
-   lsp-signature-auto-activate nil
+   lsp-modeline-code-actions-enable t
+   lsp-modeline-diagnostics-enable  t
+   lsp-enable-links                nil
+   lsp-lens-enable                 nil
+   lsp-signature-auto-activate     nil
    lsp-signature-render-documentation nil
-   lsp-enable-snippet t
-   lsp-ui-doc-show-with-cursor nil
-   lsp-ui-doc-show-with-mouse nil
-   lsp-restart 'auto-restart
-   lsp-lens-enable nil
-   lsp-idle-delay 1
+
+   ;; ─── Completion ──────────────────────────────────────────────────
+   lsp-completion-provider                    :capf
+   lsp-completion-show-detail                 t
+   lsp-completion-show-kind                   t
+   lsp-completion-enable-additional-text-edit nil
+   lsp-completion-filter-on-incomplete        nil
+   lsp-completion-no-cache                    nil
+   lsp-completion-sort-completion             t
+   lsp-enable-snippet                         t
+
+   ;; ─── Behavior ────────────────────────────────────────────────────
+   lsp-diagnostics-provider       :auto
+   lsp-enable-on-type-formatting  nil
+   lsp-enable-folding             t
+   lsp-auto-guess-root            nil
+   lsp-keep-workspace-alive       t
+   lsp-restart                    'auto-restart
+   lsp-headerline-breadcrumb-enable   t
    lsp-headerline-breadcrumb-segments '(project file symbols)
-   lsp-client-packages '(lsp-golangci-lint)
-   lsp-go-analyses '(
-                     (simplifycompositelit . :json-false)
-                     (nilness . t)
-                     (shadow . t)
-                     (unusedparams . t)
-                     (unusedwrite . t)
-                     (useany . t)
-                     (unusedvariable . t))
-   ))
+
+   ;; ─── Go / gopls ──────────────────────────────────────────────────
+   lsp-go-use-gofumpt             t
+   lsp-gopls-use-placeholders     nil
+   lsp-go-hover-kind              "FullDocumentation"
+   ;; lsp-go-env                     '((GOFLAGS . "-mod=mod"))
+
+   ;; ─── Session Blacklist ────────────────────────────────────────────
+   lsp-session-file-blacklist
+   (list (expand-file-name "~/go")
+         "/opt/homebrew"
+         "/usr/local"
+         "/usr/lib"))
+
+  ;; ─── gopls Custom Settings ─────────────────────────────────────────
+  (lsp-register-custom-settings
+   '(;; Analyses
+     ("gopls.analyses.nilness"         t   t)
+     ("gopls.analyses.shadow"          t   t)
+     ("gopls.analyses.unusedparams"    t   t)
+     ("gopls.analyses.unusedwrite"     t   t)
+     ("gopls.analyses.unusedvariable"  t   t)
+     ("gopls.analyses.simplifycompositelit" :json-false t)
+     ;; Completion
+     ("gopls.completionBudget"     "500ms")
+     ("gopls.matcher"              "Fuzzy")
+     ("gopls.completeUnimported"   t t)
+     ("gopls.deepCompletion"       t t))))
 
 (add-hook 'xref-backend-functions #'dumb-jump-xref-activate)
 
-(after! exec-path-from-shell
-  ;; Add GOPATH to shell
-  (when (memq window-system '(mac ns x))
-    (exec-path-from-shell-initialize))
-  )
+(use-package! exec-path-from-shell
+  :config
+  (exec-path-from-shell-initialize))
+
+(defun my/switch-project-and-find-file ()
+  (+workspaces-switch-to-project-h)
+  (run-at-time 0 nil #'projectile-find-file)) ;; defer
 
 (after! projectile
-  (setq projectile-ignored-directories '("/Users/macbook_autonomous/go")
+  ;; để Doom tự xử lý workspace
+  (setq +workspaces-on-switch-project-behavior 't)
+
+  ;; vào project là mở file picker
+  (setq projectile-switch-project-action #'my/switch-project-and-find-file)
+
+  ;; giữ nguyên tuning của bạn
+  (setq projectile-sort-order 'recently-active
+        projectile-enable-caching t
+        projectile-indexing-method 'alien
+        projectile-globally-ignored-directories
+        '("vendor" "node_modules" ".git" ".idea" ".vscode" "dist" "build" "tmp")
         projectile-ignored-project-function
         (lambda (dir)
-          (string-prefix-p (expand-file-name "~/go") dir))
-        )
-  )
+          (when-let ((real (and (stringp dir)
+                                (file-truename dir))))
+            (or
+             (string-prefix-p (expand-file-name "~/go") real)
+             (string-prefix-p "/opt/homebrew" real))))))
+
+(after! vertico
+  (setq vertico-sort-function #'vertico-sort-history-alpha))
+
+(use-package! savehist
+  :init
+  (savehist-mode))
+
+(setq grip-update-after-change nil)
 
 ;; To get information about any of these functions/macros, move the cursor over
 ;; the highlighted symbol at press 'K' (non-evil users must press 'C-c c k').
@@ -328,11 +504,6 @@
 ;;
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
-(use-package! yafolding
-  )
-
-(use-package! projectile
-  )
 
 ;;(use-package! dape
 ;;  :config
@@ -352,7 +523,7 @@
   :bind
   ("M-g g" . avy-goto-line)
   ;; ("c-s-o" . avy-goto-word-opr-subword-1)
-  ("M-g s" . avy-goto-char-timer)
+  ;;("M-g s" . avy-goto-char-timer)
   :config
   (avy-setup-default) ;; can use c-' after trigger isearch
   )
@@ -364,6 +535,7 @@
   )
 
 (after! magit
+  (define-key magit-mode-map (kbd "C-<tab>") 'undefined)
   (setq  magit-refresh-status-buffer nil
          magit-diff-refine-hunk t)
   )
@@ -374,15 +546,28 @@
   (("\\.env.test\\'" . dotenv-mode))
   (("\\.env.development\\'" . dotenv-mode)))
 
-(after! helm
-  (setq helm-split-window-inside-p t
-        helm-split-window-default-side 'below
-        ))
+(use-package! gcmh
+  :config
+  (setq gcmh-idle-delay 5         ;; GC sau 5s idle
+        gcmh-high-cons-threshold (* 64 1024 1024)  ;; 64MB khi đang làm việc
+        gcmh-low-cons-threshold (* 16 1024 1024))  ;; 16MB khi idle
+  (gcmh-mode 1))
+
+;; Tắt font-lock khi scroll
+(setq jit-lock-defer-time 0.05
+      jit-lock-stealth-time 1.0
+      jit-lock-stealth-nice 0.1
+      scroll-conservatively 101
+      scroll-margin 3
+      fast-but-imprecise-scrolling t)
+
+;; inhibit resize frame khi mở minibuffer — giảm redraw
+(setq frame-inhibit-implied-resize t)
 
 ;; better defaults
 (setq-default
  delete-by-moving-to-trash t                      ; Delete files to trash
- window-combination-resize t                      ; take new window space from all other windows (not just current)
+ window-combination-resize t                      ; take new window space from all other winDows (not just current)
  x-stretch-cursor t                               ; Stretch cursor to the glyph width
  uniquify-buffer-name-style 'forward)
 
@@ -394,17 +579,15 @@
 
 ;; (setq gofmt-command "goimports")
 
-(setq company-show-numbers t)
-
-(projectile-mode +1)
+;; (projectile-mode +1)
 (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
 
 (setq imenu-auto-rescan 1)
 
-(setq
- neo-smart-open t
- neo-window-fixed-size nil
- neo-theme (if (display-graphic-p) 'icons 'arrow))
+;; (setq
+;;  neo-smart-open t
+;;  neo-window-fixed-size nil
+;;  neo-theme (if (display-graphic-p) 'icons 'arrow))
 
 ;; (setenv "SHELL" (executable-find "zsh"))
 (let ((exec-path (append '("/usr/local/bin" "/usr/bin" "/bin") exec-path)))
@@ -426,7 +609,6 @@
   (setq dumb-jump-go-search "gopls")
   )
 
-(setq doom-modeline-icon (display-graphic-p))
 (setq doom-modeline-major-mode-icon t)
 
 ;; (add-hook 'after-focus-change-function 'garbage-collect)
@@ -435,21 +617,6 @@
 (setq default-frame-alist
       '((cursor-color . "dark orange")))
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
-
-;; Enabling only some features
-;; (setq dap-auto-configure-features '(locals controls tooltip))
-;; (dap-mode 1)
-;; (dap-print-io t)
-;; The modes below are optional
-;; (dap-ui-mode nil)
-;; enables mouse hover support
-;; (dap-tooltip-mode 1)
-;; use tooltips for mouse hover
-;; if it is not enabled `dap-mode' will use the minibuffer.
-;; (tooltip-mode 1)
-;; displays floating panel with debug buttons
-;; requies emacs 26+
-;; (dap-ui-controls-mode 1)
 
 (setq org-todo-keywords
       '((sequence "TODO" "START WORKING" "HOLD" "DONE")))
@@ -477,54 +644,29 @@
      (file-notify-rm-watch key))
    file-notify-descriptors))
 
-(defun set-exec-path-from-shell-PATH ()
-  "Set up Emacs' `exec-path' and PATH env var to match that
-   used by the user's shell.
- This is particularly useful under Mac OSX,
-   where GUI apps are not started from a shell."
-  (interactive)
-  (let ((path-from-shell (replace-regexp-in-string
-                          "[ \t\n]*$"
-                          ""
-                          (shell-command-to-string "$SHELL --login -i -c 'echo $PATH'"))))
-    (setenv "PATH" path-from-shell)
-    (setq eshell-path-env path-from-shell) ; for eshell users
-    (setq exec-path (split-string path-from-shell path-separator))))
+;; (defun set-exec-path-from-shell-PATH ()
+;;   "Set up Emacs' `exec-path' and PATH env var to match that
+;;    used by the user's shell.
+;;  This is particularly useful under Mac OSX,
+;;    where GUI apps are not started from a shell."
+;;   (interactive)
+;;   (let ((path-from-shell (replace-regexp-in-string
+;;                           "[ \t\n]*$"
+;;                           ""
+;;                           (shell-command-to-string "$SHELL --login -i -c 'echo $PATH'"))))
+;;     (setenv "PATH" path-from-shell)
+;;     (setq eshell-get-path path-from-shell) ; for eshell users
+;;     (setq exec-path (split-string path-from-shell path-separator))))
 
-(setenv "LSP_USE_PLISTS" "true")
 ;; Set up before-save hooks to format buffer and add/delete imports.
 ;; Make sure you don't have other gofmt/goimports hooks enabled.
 
 (defun lsp-go-install-save-hooks ()
-  (add-hook 'before-save-hook #'lsp-format-buffer t t)
-  (add-hook 'before-save-hook #'lsp-organize-imports t t))
+  (add-hook 'before-save-hook #'lsp-format-buffer nil t)
+  (add-hook 'before-save-hook #'lsp-organize-imports nil t))
 
-;; Optional: install eglot-format-buffer as a save hook.
-;; The depth of -10 places this before eglot's willSave notification,
-;; so that that notification reports the actual contents that will be saved.
-;; (defun eglot-format-buffer-before-save ()
-;;   (add-hook 'before-save-hook #'lsp-organize-imports t t)
-;;   (add-hook 'before-save-hook #'eglot-format-buffer -10 t))
-
-;; (add-hook 'go-mode-hook 'eglot-ensure)
 (add-hook 'go-mode-hook #'lsp-deferred)
-;; (add-hook 'go-mode-hook #'yas-minor-mode)
-;; (add-hook 'go-mode-hook #'eglot-format-buffer-before-save)
 (add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
-
-;; -------
-;; (add-hook 'go-mode-hook 'eglot-ensure)
-;; ;; Optional: install eglot-format-buffer as a save hook.
-;; ;; The depth of -10 places this before eglot's willSave notification,
-;; ;; so that that notification reports the actual contents that will be saved.
-;; (defun eglot-format-buffer-before-save ()
-;;   (add-hook 'before-save-hook #'eglot-format-buffer -10 t))
-;; (add-hook 'go-mode-hook #'eglot-format-buffer-before-save)
-;; (setq-default eglot-workspace-configuration
-;;               '((:gopls .
-;;                  ((staticcheck . t)
-;;                   (matcher . "CaseSensitive")))))
-;; -------
 
 ;; Show current file-path in minibuffer and copy it to kill ring (clip-board)
 (defun copy-full-path-to-kill-ring ()
@@ -564,12 +706,10 @@
        "\\([A-Z][a-z]\\)" "\\1" str)))))
 
 (defun create-or-switch-to-shell(name)
-  ;; (with-eval-after-load 'shell
-  ;;   (native-complete-setup-bash))
   (if (get-buffer name)
       (switch-to-buffer name)
-    (eshell)
-    ;; (vterm name)
+    ;; (eshell)
+    (vterm name)
     (rename-buffer name)
     )
   )
@@ -585,3 +725,13 @@
   (interactive)
   (create-or-switch-to-shell "server-shell")
   )
+
+(defun open-claude-code-shell ()
+  "Open claude code shell, start claude if new buffer."
+  (interactive)
+  (let ((exists (get-buffer "claude-code-shell")))
+    (create-or-switch-to-shell "claude-code-shell")
+    (unless exists
+      (vterm-send-string "claude\n"))))
+
+(message "🔥 CONFIG LOADED !!!")

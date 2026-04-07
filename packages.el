@@ -49,19 +49,38 @@
                                         ;(unpin! t)
 (package! csv)
 (package! ag)
-(package! projectile)
 (package! smart-window)
 (package! dumb-jump)
 (package! highlight-symbol)
-(package! neotree)
 (package! monokai-theme)
-(package! all-the-icons)
-(package! exec-path-from-shell)
 (package! avy)
 (package! protobuf-mode)
-(package! consult)
 (package! dotenv-mode)
 (package! graphql-mode)
 (package! dockerfile-mode)
-(package! yafolding)
 (package! ace-jump-mode)
+(package! yafolding)
+(package! corfu)
+(package! orderless)
+(package! consult)
+(package! all-the-icons)
+(package! rg)
+(package! ripgrep)
+(package! projectile-ripgrep)
+
+;; Test REST API ngay trong Emacs — thay Postman
+(package! restclient)
+(package! ob-restclient)  ;; chạy restclient trong org-mode
+
+;; Generate go struct tags tự động
+(package! go-gen-test)    ;; auto generate unit test skeleton
+
+;; Git blame inline
+(package! blamer)
+(package! gcmh)
+(package! imenu-list)
+(package! ibuffer-vc)
+
+;; Consult + LSP — tìm symbols across workspace
+(package! consult-lsp)
+(package! exec-path-from-shell)
