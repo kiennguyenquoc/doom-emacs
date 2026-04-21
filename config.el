@@ -36,28 +36,18 @@
 (custom-set-faces!
   '(hl-line :background "#3e4446")
   ;; '(highlight :foreground "#aa2ee8")
-  )
+
+  ;; Workspace tabs — highlight tab đang active
+  '(+workspace-tab-selected-face :background "#fd971f" :foreground "#272822" :weight bold)
+  '(+workspace-tab-face          :background "#3e3d31" :foreground "#75715e" :weight normal))
 
 ;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
 ;; up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
 ;; refresh your font settings. If Emacs still can't find your font, it likely
 ;; wasn't installed correctly. Font issues are rarely Doom issues!
 
-(when (display-graphic-p)
-  (use-package! all-the-icons)
-  )
+(use-package! all-the-icons)
 
-;; Disable scrollbars globally (robust)
-(defun my/disable-scroll-bars (&optional frame)
-  (with-selected-frame (or frame (selected-frame))
-    (scroll-bar-mode -1)
-    (horizontal-scroll-bar-mode -1)))
-
-(my/disable-scroll-bars)
-(add-hook 'after-make-frame-functions #'my/disable-scroll-bars)
-
-(push '(vertical-scroll-bars . nil) default-frame-alist)
-(push '(horizontal-scroll-bars . nil) default-frame-alist)
 
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
@@ -85,7 +75,6 @@
 (set-selection-coding-system 'utf-8)   ; please
 (prefer-coding-system        'utf-8)   ; with sugar on top
 (setq default-process-coding-system '(utf-8-unix . utf-8-unix))
-(setq exec-path-from-shell-arguments '("-l"))
 ;; (setq persp-emacsclient-init-frame-behaviour-override t)
 (require 'lsp-mode)
 (require 'projectile)
@@ -107,17 +96,16 @@
       require-final-newline               t
       visible-bell                        nil
       ring-bell-function                  'ignore
-      custom-file                         "~/.emacs.d/.custom.el"
+      custom-file                         (expand-file-name "custom.el" doom-user-dir)
       ;; http://ergoemacs.org/emacs/emacs_stop_cursor_enter_prompt.html
       minibuffer-prompt-properties
-      '(read-only t point-entered minibuffer-avoid-prompt face minibuffer-prompt)
+      '(read-only t cursor-intangible t face minibuffer-prompt)
 
       ;; Disable non selected window highlight
       cursor-in-non-selected-windows     'hollow
       highlight-nonselected-windows      nil
       ;; PATH
       ;; exec-path                          (append exec-path '("/usr/local/bin/"))
-      indent-tabs-mode                   t
       inhibit-startup-message            t
       fringes-outside-margins            t
       select-enable-clipboard            t
@@ -126,7 +114,6 @@
       inhibit-compacting-font-caches t
       )
 
-(add-hook 'prog-mode-hook #'+fold/toggle)
 (setq markdown-command
       "pandoc --from markdown --to html --standalone --syntax-highlighting=pygments")
 
@@ -160,7 +147,7 @@
 (unless (file-exists-p (concat temp-dir "/auto-save-list"))
   (make-directory (concat temp-dir "/auto-save-list") :parents))
 
-(fset 'yes-or-no-p 'y-or-n-p)
+(setq use-short-answers t)
 (global-auto-revert-mode t)
 
 ;; Disable toolbar & menubar
@@ -185,7 +172,6 @@
 
 (setq load-prefer-newer t)
 (setq native-comp-async-report-warnings-errors nil)
-(setq comp-deferred-compilation t)
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
@@ -211,6 +197,21 @@
 ;; - `map!' for binding new keys
 ;;
 ;;
+
+(use-package! blamer
+  :bind (("s-i" . blamer-show-commit-info))
+  :defer 20
+  :custom
+  (blamer-idle-time 0.3)
+  (blamer-min-offset 70)
+  :custom-face
+  (blamer-face ((t :foreground "#7a88cf"
+                   :background nil
+                   :height 140
+                   :italic t)))
+  :config
+  (global-blamer-mode 1))
+
 (after! treemacs
   (add-hook 'treemacs-mode-hook
             (lambda ()
@@ -281,8 +282,8 @@
 
 ;;; COMPLETION STACK
 (after! vertico
-  (vertico-mode)
-  (setq vertico-cycle t))
+  (setq vertico-cycle t
+        vertico-sort-function #'vertico-sort-history-alpha))
 
 (after! orderless
   (setq completion-styles '(orderless basic)
@@ -341,12 +342,8 @@
   (setq vterm-max-scrollback 10000)
   (setq vterm-kill-buffer-on-exit t)
   (setq vterm-copy-exclude-prompt t)
-  (setq vterm-timer-delay 0.01))
+  (setq vterm-timer-delay 0.05))
 
-(after! blamer
-  (setq blamer-idle-time 0.5
-        blamer-min-offset 40)
-  (global-blamer-mode 0))  ;; off by default, toggle bằng M-x blamer-mode
 
 (after! consult-lsp
   (map! "M-g d" #'consult-lsp-diagnostics
@@ -359,21 +356,13 @@
  "C-c s b" #'consult-buffer
  "C-c s i" #'consult-imenu)
 
+;; ─── Protobuf + buf ──────────────────────────────────────────────────────────
 (after! protobuf-mode
   (add-hook 'protobuf-mode-hook
             (lambda ()
               (setq indent-tabs-mode nil
-                    tab-width 2))))
-
-(after! dap-mode
-  (require 'dap-dlv-go)  ;; dlv debugger cho Go
-  (dap-ui-mode 1))
-
-(add-hook 'minibuffer-setup-hook
-          (lambda () (setq gc-cons-threshold most-positive-fixnum)))
-
-(add-hook 'minibuffer-exit-hook
-          (lambda () (setq gc-cons-threshold (* 64 1024 1024))))
+                    tab-width 2)
+              )))
 
 
 ;; (add-hook 'go-mode-hook (lambda () (require 'lsp-mode)))
@@ -388,7 +377,7 @@
 
    ;; ─── Performance ─────────────────────────────────────────────────
    lsp-use-plists                  t
-   lsp-idle-delay                  0.3
+   lsp-idle-delay                  0.5
    lsp-log-io                      nil
    read-process-output-max         (* 1024 1024 10)
 
@@ -409,7 +398,7 @@
    lsp-signature-render-documentation nil
 
    ;; ─── Completion ──────────────────────────────────────────────────
-   lsp-completion-provider                    :capf
+   lsp-completion-provider                    :none
    lsp-completion-show-detail                 t
    lsp-completion-show-kind                   t
    lsp-completion-enable-additional-text-edit nil
@@ -454,24 +443,36 @@
      ("gopls.completionBudget"     "500ms")
      ("gopls.matcher"              "Fuzzy")
      ("gopls.completeUnimported"   t t)
-     ("gopls.deepCompletion"       t t))))
+     ("gopls.deepCompletion"       t t)))
+
+  ;; ─── buf LSP (protobuf) ──────────────────────────────────────────────
+  (when (executable-find "buf")
+    (lsp-register-client
+     (make-lsp-client
+      :new-connection (lsp-stdio-connection '("buf" "beta" "lsp"))
+      :activation-fn (lsp-activate-on "protobuf")
+      :major-modes '(protobuf-mode)
+      :server-id 'buf-lsp
+      :priority 1)))
+
+  ;; ─── File Watch Ignore Patterns ──────────────────────────────────────
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\~/go\\'")
+  (add-to-list 'lsp-file-watch-ignored-files "[/\\\\]\\.yaml\\'"))
 
 (add-hook 'xref-backend-functions #'dumb-jump-xref-activate)
 
 (use-package! exec-path-from-shell
   :config
+  (setq exec-path-from-shell-arguments '("-l"))
   (exec-path-from-shell-initialize))
 
-(defun my/switch-project-and-find-file ()
-  (+workspaces-switch-to-project-h)
-  (run-at-time 0 nil #'projectile-find-file)) ;; defer
-
 (after! projectile
-  ;; để Doom tự xử lý workspace
-  (setq +workspaces-on-switch-project-behavior 't)
+  ;; Doom tự handle workspace switching qua hook khi behavior = t
+  ;; KHÔNG gọi +workspaces-switch-to-project-h thủ công — sẽ chạy sai context
+  (setq +workspaces-on-switch-project-behavior t)
 
-  ;; vào project là mở file picker
-  (setq projectile-switch-project-action #'my/switch-project-and-find-file)
+  ;; Doom hook chạy trước, sau đó mới mở file picker
+  (setq projectile-switch-project-action #'projectile-find-file)
 
   ;; giữ nguyên tuning của bạn
   (setq projectile-sort-order 'recently-active
@@ -485,14 +486,9 @@
                                 (file-truename dir))))
             (or
              (string-prefix-p (expand-file-name "~/go") real)
-             (string-prefix-p "/opt/homebrew" real))))))
+             (string-prefix-p "/opt/homebrew" real)))))
 
-(after! vertico
-  (setq vertico-sort-function #'vertico-sort-history-alpha))
-
-(use-package! savehist
-  :init
-  (savehist-mode))
+  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
 
 (setq grip-update-after-change nil)
 
@@ -529,13 +525,9 @@
   )
 
 
-(use-package! ace-jump-mode
-  :bind
-  ("M-g a" . ace-jump-mode)
-  )
 
 (after! magit
-  (define-key magit-mode-map (kbd "C-<tab>") 'undefined)
+  (define-key magit-mode-map (kbd "C-<tab>") #'+workspace/switch-right)
   (setq  magit-refresh-status-buffer nil
          magit-diff-refine-hunk t)
   )
@@ -571,18 +563,11 @@
  x-stretch-cursor t                               ; Stretch cursor to the glyph width
  uniquify-buffer-name-style 'forward)
 
-;; Start LSP Mode and YASnippet mode
-(with-eval-after-load 'lsp-mode
-  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\~/go\\'")
-  ;; or
-  (add-to-list 'lsp-file-watch-ignored-files "[/\\\\]\\.yaml\\'"))
 
 ;; (setq gofmt-command "goimports")
 
-;; (projectile-mode +1)
-(define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
 
-(setq imenu-auto-rescan 1)
+(setq imenu-auto-rescan t)
 
 ;; (setq
 ;;  neo-smart-open t
@@ -595,19 +580,10 @@
 (setq shell-file-name (executable-find "zsh"))
 (setq shell-command-switch "-ic")
 
-(setq shell-default-height 30
-      shell-default-shell 'shell
-      shell-default-term-shell "/bin/zsh"
-      shell-default-position 'bottom)
-
 (with-eval-after-load 'go-mode
-  ;; (setq go-tag-args (list "-transform" "camelcase"))
-  (setq go-tag-args (list "-transform" "snakecase")
-        )
+  (setq go-tag-args (list "-transform" "snakecase"))
   (define-key go-mode-map (kbd "C-c t") #'go-tag-add)
-  (define-key go-mode-map (kbd "C-c T") #'go-tag-remove)
-  (setq dumb-jump-go-search "gopls")
-  )
+  (define-key go-mode-map (kbd "C-c T") #'go-tag-remove))
 
 (setq doom-modeline-major-mode-icon t)
 
@@ -615,8 +591,10 @@
 ;; (run-with-idle-timer 5 t 'garbage-collect)
 
 (setq default-frame-alist
-      '((cursor-color . "dark orange")))
-(add-to-list 'default-frame-alist '(fullscreen . maximized))
+      '((cursor-color . "dark orange")
+        (vertical-scroll-bars . nil)
+        (horizontal-scroll-bars . nil)
+        (fullscreen . maximized)))
 
 (setq org-todo-keywords
       '((sequence "TODO" "START WORKING" "HOLD" "DONE")))
@@ -672,7 +650,7 @@
 (defun copy-full-path-to-kill-ring ()
   "Copy buffer's full path to kill ring."
   (interactive)
-  (let ((buffer-path dired-directory))
+  (let ((buffer-path (bound-and-true-p dired-directory)))
     (when buffer-file-name
       (setq buffer-path buffer-file-name))
     (when buffer-path
@@ -701,9 +679,9 @@
   (let ((case-fold-search nil))
     (downcase
      (replace-regexp-in-string
-      "\\([A-Z]+\\)" "_\\1"
+      "^_" ""
       (replace-regexp-in-string
-       "\\([A-Z][a-z]\\)" "\\1" str)))))
+       "\\([A-Z]\\)" "_\\1" str)))))
 
 (defun create-or-switch-to-shell(name)
   (if (get-buffer name)
@@ -734,4 +712,21 @@
     (unless exists
       (vterm-send-string "claude\n"))))
 
-(message "🔥 CONFIG LOADED !!!")
+;; ─── gotest — chạy Go test trong Emacs ──────────────────────────────────────
+(after! gotest
+  (map! :map go-mode-map
+        :leader
+        (:prefix ("m t" . "test")
+         :desc "Run test at point"  "t" #'go-test-current-test
+         :desc "Run all tests"      "a" #'go-test-current-file
+         :desc "Run package tests"  "p" #'go-test-current-project
+         :desc "Run benchmarks"     "b" #'go-test-current-benchmark
+         :desc "Test with coverage" "c" #'go-test-current-coverage)))
+
+;; ─── ibuffer-vc — group buffers theo git repo ────────────────────────────────
+(after! ibuffer
+  (add-hook 'ibuffer-hook
+            (lambda ()
+              (ibuffer-vc-set-filter-groups-by-vc-root)
+              (unless (eq ibuffer-sorting-mode 'alphabetic)
+                (ibuffer-do-sort-by-alphabetic)))))

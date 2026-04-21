@@ -48,8 +48,6 @@
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
                                         ;(unpin! t)
 (package! csv)
-(package! ag)
-(package! smart-window)
 (package! dumb-jump)
 (package! highlight-symbol)
 (package! monokai-theme)
@@ -58,14 +56,8 @@
 (package! dotenv-mode)
 (package! graphql-mode)
 (package! dockerfile-mode)
-(package! ace-jump-mode)
-(package! yafolding)
-(package! corfu)
-(package! orderless)
-(package! consult)
 (package! all-the-icons)
 (package! rg)
-(package! ripgrep)
 (package! projectile-ripgrep)
 
 ;; Test REST API ngay trong Emacs — thay Postman
@@ -75,8 +67,8 @@
 ;; Generate go struct tags tự động
 (package! go-gen-test)    ;; auto generate unit test skeleton
 
-;; Git blame inline
-(package! blamer)
+;; Go test runner
+(package! gotest)
 (package! gcmh)
 (package! imenu-list)
 (package! ibuffer-vc)
@@ -84,3 +76,5 @@
 ;; Consult + LSP — tìm symbols across workspace
 (package! consult-lsp)
 (package! exec-path-from-shell)
+
+(package! blamer)
