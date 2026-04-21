@@ -202,7 +202,7 @@
   :bind (("s-i" . blamer-show-commit-info))
   :defer 20
   :custom
-  (blamer-idle-time 0.3)
+  (blamer-idle-time 1.0)
   (blamer-min-offset 70)
   :custom-face
   (blamer-face ((t :foreground "#7a88cf"
@@ -322,11 +322,9 @@
               (add-to-list 'completion-at-point-functions
                            (cape-capf-super
                             #'lsp-completion-at-point
-                            #'cape-file
-			    #'cape-dabbrev))
+                            #'cape-file))
 
-              (add-to-list 'completion-at-point-functions #'cape-keyword)
-              (add-to-list 'completion-at-point-functions #'cape-dabbrev))))
+              (add-to-list 'completion-at-point-functions #'cape-keyword))))
 
 (after! consult
   (setq consult-narrow-key "<"))
@@ -412,7 +410,7 @@
    lsp-enable-on-type-formatting  nil
    lsp-enable-folding             t
    lsp-auto-guess-root            nil
-   lsp-keep-workspace-alive       t
+   lsp-keep-workspace-alive       nil
    lsp-restart                    'auto-restart
    lsp-headerline-breadcrumb-enable   t
    lsp-headerline-breadcrumb-segments '(project file symbols)
@@ -440,10 +438,11 @@
      ("gopls.analyses.unusedvariable"  t   t)
      ("gopls.analyses.simplifycompositelit" :json-false t)
      ;; Completion
-     ("gopls.completionBudget"     "500ms")
+     ("gopls.completionBudget"     "100ms")
      ("gopls.matcher"              "Fuzzy")
      ("gopls.completeUnimported"   t t)
-     ("gopls.deepCompletion"       t t)))
+     ("gopls.deepCompletion"       :json-false t)
+     ("gopls.memoryMode"           "DegradeClosed")))
 
   ;; ─── buf LSP (protobuf) ──────────────────────────────────────────────
   (when (executable-find "buf")
