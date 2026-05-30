@@ -73,8 +73,26 @@
 (package! imenu-list)
 (package! ibuffer-vc)
 
-;; Consult + LSP — tìm symbols across workspace
-(package! consult-lsp)
-(package! exec-path-from-shell)
 
 (package! blamer)
+
+;; Eglot performance booster — binary at ~/.cargo/bin/emacs-lsp-booster
+(package! eglot-booster
+  :recipe (:host github :repo "jdtsmith/eglot-booster"))
+
+;; Smart selection expansion
+(package! expand-region)
+
+;; golangci-lint via flymake
+(package! flymake-golangci
+  :recipe (:host github :repo "storvik/flymake-golangci"))
+
+;; Workspace symbol search via consult
+(package! consult-eglot)
+
+;; Markdown grip preview
+(package! grip-mode)
+
+;; LSP breadcrumbs in header-line (eglot-native)
+(package! breadcrumb)
+
